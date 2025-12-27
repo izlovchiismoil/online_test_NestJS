@@ -48,12 +48,24 @@ export class UserService {
     }
     return user;
   }
-  async getAll(): Promise<User[]> {
-    const users = await this.userRepository.find();
-    if (!users || users.length === 0) {
-      throw new NotFoundException('Users not found');
-    }
-    return users;
+  async getAllByPagination(limit: number, page: number) {
+    const skip: number = (page - 1) * limit;
+    const [users, total] = await this.userRepository.findAndCount({
+      skip,
+      take: limit,
+      order: {
+        id: 'DESC',
+      },
+    });
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
   async delete(id: number): Promise<void> {
     const result = await this.userRepository.delete(id);

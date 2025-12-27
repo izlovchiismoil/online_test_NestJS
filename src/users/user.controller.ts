@@ -7,11 +7,13 @@ import {
   Delete,
   ParseIntPipe,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto } from '../questions/dto/get-question-by-pagination.dto';
 
 @Controller('users')
 export class UserController {
@@ -25,8 +27,8 @@ export class UserController {
     return await this.userService.getById(id);
   }
   @Get('')
-  async getAll(): Promise<User[]> {
-    return await this.userService.getAll();
+  async getByPagination(@Query() { limit = 10, page = 1 }: PaginationDto) {
+    return this.userService.getAllByPagination(limit, page);
   }
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
