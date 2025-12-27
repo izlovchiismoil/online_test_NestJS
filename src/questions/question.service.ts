@@ -23,20 +23,26 @@ export class QuestionService {
       throw new ConflictException('Question already exists');
     }
     const questionObj = this.questionRepository.create(createQuestionDto);
-    const savedQuestion = await this.questionRepository.save(questionObj);
-    if (!savedQuestion) throw new NotFoundException('Question is not created');
-    const newQuestion = await this.questionRepository.findOne({
-      where: { id: savedQuestion.id },
-    });
-    if (!newQuestion) throw new NotFoundException('Question is not created');
-    return newQuestion;
+    return await this.questionRepository.save(questionObj);
   }
-  async getAll(): Promise<Question[]> {
-    const questions: Question[] = await this.questionRepository.find();
-    if (!questions || questions.length === 0) {
-      throw new NotFoundException('Questions not found');
-    }
-    return questions;
+  async getAllByPagination(limit: number, page: number) {
+    const skip: number = (page - 1) * limit;
+    const [questions, total] = await this.questionRepository.findAndCount({
+      skip,
+      take: limit,
+      order: {
+        id: 'DESC',
+      },
+    });
+    return {
+      data: questions,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
   async getById(id: number): Promise<Question | null> {
     const question: Question | null = await this.questionRepository.findOne({
@@ -49,8 +55,7 @@ export class QuestionService {
     id: number,
     updateQuestionDto: UpdateQuestionDto,
   ): Promise<Question> {
-    const question: Question | null = await this.questionRepository.findOne(
-      {
+    const question: Question | null = await this.questionRepository.findOne({
       where: { id },
     });
     if (!question) throw new NotFoundException('Question not found');

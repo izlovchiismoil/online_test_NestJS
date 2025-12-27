@@ -7,11 +7,13 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { QuestionService } from './question.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { Question } from './entities/question.entity';
 import { UpdateQuestionDto } from './dto/update-question.dto';
+import { PaginationDto } from './dto/get-question-by-pagination.dto';
 @Controller('questions')
 export class QuestionController {
   constructor(private questionService: QuestionService) {}
@@ -26,8 +28,8 @@ export class QuestionController {
     return await this.questionService.getById(id);
   }
   @Get('')
-  async getAll(): Promise<Question[]> {
-    return await this.questionService.getAll();
+  async getByPagination(@Query() { limit = 10, page = 1 }: PaginationDto) {
+    return this.questionService.getAllByPagination(limit, page);
   }
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
