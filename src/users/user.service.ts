@@ -1,8 +1,15 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import bcryptjs from 'bcryptjs';
 
 @Injectable()
 export class UserService {
@@ -20,9 +27,52 @@ export class UserService {
       throw new ConflictException('User already exists');
     }
     const userObj = this.userRepository.create(createUserDto);
-    return await this.userRepository.save(userObj);
+    const salt = await bcryptjs.genSalt(10);
+    userObj.password = await bcryptjs.hash(createUserDto.password, salt);
+    const savedUser = await this.userRepository.save(userObj);
+    if (!savedUser) {
+      throw new BadRequestException('User is not created');
+    }
+    const newUser = await this.userRepository.findOne({
+      where: { id: savedUser.id },
+    });
+    if (!newUser) {
+      throw new NotFoundException('User does not exist');
+    }
+    return newUser;
   }
-  async getAllUsers(): Promise<User[]> {
-    return await this.userRepository.find();
+  async getById(id: number): Promise<User | null> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+  async getAll(): Promise<User[]> {
+    const users = await this.userRepository.find();
+    if (!users || users.length === 0) {
+      throw new NotFoundException('Users not found');
+    }
+    return users;
+  }
+  async delete(id: number): Promise<void> {
+    const result = await this.userRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('User not found');
+    }
+  }
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (updateUserDto.password?.length) {
+      updateUserDto.password = await bcryptjs.hash(updateUserDto.password, 10);
+    } else {
+      delete updateUserDto.password;
+    }
+    Object.assign(user, updateUserDto);
+
+    return this.userRepository.save(user);
   }
 }
