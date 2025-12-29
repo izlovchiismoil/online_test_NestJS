@@ -10,10 +10,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { QuestionService } from './question.service';
+import { UseGuards } from '@nestjs/common';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { Question } from './entities/question.entity';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { PaginationDto } from './dto/get-question-by-pagination.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @Controller('questions')
 export class QuestionController {
   constructor(private questionService: QuestionService) {}
@@ -21,6 +23,7 @@ export class QuestionController {
   async create(@Body() body: CreateQuestionDto) {
     return await this.questionService.create(body);
   }
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getById(
     @Param('id', ParseIntPipe) id: number,
