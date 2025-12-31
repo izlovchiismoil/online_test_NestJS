@@ -16,6 +16,7 @@ import { Question } from './entities/question.entity';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { PaginationDto } from './dto/get-question-by-pagination.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+@UseGuards(JwtAuthGuard)
 @Controller('questions')
 export class QuestionController {
   constructor(private questionService: QuestionService) {}
