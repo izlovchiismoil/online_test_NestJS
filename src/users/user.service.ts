@@ -84,6 +84,14 @@ export class UserService {
     }
     Object.assign(user, updateUserDto);
 
-    return this.userRepository.save(user);
+    const updated = await this.userRepository.save(user);
+    if (!updated) {
+      throw new NotFoundException('User is not updated');
+    }
+    const updatedUser = await this.userRepository.findOne({ where: { id } });
+    if (!updatedUser) {
+      throw new NotFoundException('User is not updated');
+    }
+    return updatedUser;
   }
 }
