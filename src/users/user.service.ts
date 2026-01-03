@@ -69,7 +69,7 @@ export class UserService {
   async delete(id: number): Promise<void> {
     const result = await this.userRepository.delete(id);
     if (result.affected === 0) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('User not removed');
     }
   }
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
