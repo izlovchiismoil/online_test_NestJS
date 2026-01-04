@@ -20,31 +20,43 @@ import { Role } from '../auth/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RoleGuard } from '../auth/guards/role/role.guard';
 
-@UseGuards(RoleGuard)
-@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+  @Post('init')
+  async createAdmin() {
+    return await this.userService.createAdmin();
+  }
+  @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
   @Roles(Role.ADMIN)
   @Post('create')
   async create(@Body() body: CreateUserDto) {
     return await this.userService.create(body);
   }
+  @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
   @Roles(Role.ADMIN, Role.STUDENT)
   @Get(':id')
   async getById(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
     return await this.userService.getById(id);
   }
+  @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
   @Roles(Role.ADMIN)
   @Get('')
   async getByPagination(@Query() { limit = 10, page = 1 }: PaginationDto) {
     return this.userService.getAllByPagination(limit, page);
   }
+  @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
   @Roles(Role.ADMIN)
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.userService.delete(id);
   }
+  @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
   @Roles(Role.ADMIN, Role.STUDENT)
   @Patch(':id')
   async update(

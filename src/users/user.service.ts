@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { Role } from '../auth/enums/role.enum';
 
 @Injectable()
 export class UserService {
@@ -17,6 +19,36 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
+  async createAdmin(): Promise<void> {
+    const admin = await this.userRepository.findOne({
+      where: {
+        username: 'admin',
+      },
+    });
+    if (admin) {
+      throw new ConflictException('Admin already exists');
+    }
+    const adminHashedPassword = await bcrypt.hash('admin', 10);
+    const adminObj: User = this.userRepository.create({
+      firstName: 'Admin',
+      lastName: 'Admin',
+      username: 'admin',
+      password: adminHashedPassword,
+      role: Role.ADMIN,
+    });
+    const savedAdmin = await this.userRepository.save(adminObj);
+    if (!savedAdmin) {
+      throw new NotFoundException('Admin is not created');
+    }
+    const newAdmin = await this.userRepository.findOne({
+      where: {
+        username: 'admin',
+      },
+    });
+    if (!newAdmin) {
+      throw new NotFoundException('Admin is not created');
+    }
+  }
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user: User | null = await this.userRepository.findOne({
       where: {
@@ -25,6 +57,9 @@ export class UserService {
     });
     if (user) {
       throw new ConflictException('User already exists');
+    }
+    if (createUserDto.role === Role.ADMIN) {
+      throw new ForbiddenException('Access Denied');
     }
     const userObj = this.userRepository.create(createUserDto);
     userObj.password = await bcrypt.hash(createUserDto.password, 10);
