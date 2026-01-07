@@ -7,7 +7,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Question } from './entities/question.entity';
 import { Repository } from 'typeorm';
 import { CreateQuestionDto } from './dto/create-question.dto';
-import { UpdateQuestionDto } from './dto/update-question.dto';
+import {
+  PaginationDto,
+  QuestionPaginationResponseDto,
+} from './dto/pagination.dto';
+import { JwtUser } from '../auth/interfaces/payload.interface';
 
 @Injectable()
 export class QuestionService {
@@ -15,25 +19,56 @@ export class QuestionService {
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
   ) {}
-  async create(createQuestionDto: CreateQuestionDto): Promise<Question> {
-    const question: Question | null = await this.questionRepository.findOne({
-      where: { title: createQuestionDto.title },
+  async create(
+    user: JwtUser,
+    createQuestionDto: CreateQuestionDto,
+  ): Promise<Question> {
+    const question = await this.questionRepository.findOne({
+      where: {
+        title: createQuestionDto.title,
+      },
     });
     if (question) {
       throw new ConflictException('Question already exists');
     }
-    const questionObj = this.questionRepository.create(createQuestionDto);
+    const questionObj = this.questionRepository.create({
+      title: createQuestionDto.title,
+      answers: createQuestionDto.answers,
+      userId: user.id,
+    });
     return await this.questionRepository.save(questionObj);
   }
-  async getAllByPagination(limit: number, page: number) {
-    const skip: number = (page - 1) * limit;
+  async getByPk(id: number): Promise<Question> {
+    const question = await this.questionRepository.findOne({
+      where: { id },
+      relations: {
+        answers: true,
+        user: true,
+      },
+    });
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+    return question;
+  }
+  async getByPagination(
+    paginationDto: PaginationDto,
+  ): Promise<QuestionPaginationResponseDto> {
+    const page = paginationDto.page ?? 1;
+    const limit = paginationDto.limit ?? 10;
+
+    const skip = (page - 1) * limit;
+
     const [questions, total] = await this.questionRepository.findAndCount({
       skip,
       take: limit,
-      order: {
-        id: 'DESC',
+      order: { id: 'DESC' },
+      relations: {
+        answers: true,
+        user: true,
       },
     });
+
     return {
       data: questions,
       meta: {
@@ -43,29 +78,5 @@ export class QuestionService {
         totalPages: Math.ceil(total / limit),
       },
     };
-  }
-  async getById(id: number): Promise<Question | null> {
-    const question: Question | null = await this.questionRepository.findOne({
-      where: { id },
-    });
-    if (!question) throw new NotFoundException('Question not found');
-    return question;
-  }
-  async update(
-    id: number,
-    updateQuestionDto: UpdateQuestionDto,
-  ): Promise<Question> {
-    const question: Question | null = await this.questionRepository.findOne({
-      where: { id },
-    });
-    if (!question) throw new NotFoundException('Question not found');
-    Object.assign(question, updateQuestionDto);
-    return await this.questionRepository.save(question);
-  }
-  async delete(id: number): Promise<void> {
-    const result = await this.questionRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException('Question not found');
-    }
   }
 }

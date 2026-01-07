@@ -14,7 +14,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationDto } from '../questions/dto/get-question-by-pagination.dto';
+import { PaginationDto } from '../questions/dto/pagination.dto';
 import { Roles } from '../auth/decorators/role.decorator';
 import { Role } from '../auth/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';

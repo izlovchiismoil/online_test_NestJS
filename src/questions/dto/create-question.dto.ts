@@ -1,14 +1,20 @@
-import { IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class CreateAnswerDto {
+  @IsString()
+  text: string;
+
+  @IsBoolean()
+  isCorrect: boolean;
+}
 
 export class CreateQuestionDto {
   @IsString()
   title: string;
-  @IsString()
-  trueAnswer: string;
-  @IsString()
-  falseAnswer1: string;
-  @IsString()
-  falseAnswer2: string;
-  @IsString()
-  falseAnswer3: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateAnswerDto)
+  answers: CreateAnswerDto[];
 }

@@ -1,16 +1,27 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-@Entity({ name: 'questions' })
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToOne,
+} from 'typeorm';
+import { Answer } from './answer.entity';
+import { User } from '../../users/entities/user.entity';
+@Entity('questions')
 export class Question {
   @PrimaryGeneratedColumn()
   id: number;
+
   @Column({ type: 'text' })
   title: string;
-  @Column({ type: 'text' })
-  trueAnswer: string;
-  @Column({ type: 'text' })
-  falseAnswer1: string;
-  @Column({ type: 'text' })
-  falseAnswer2: string;
-  @Column({ type: 'text' })
-  falseAnswer3: string;
+  @Column({ type: 'int' })
+  userId: number;
+  @OneToMany(() => Answer, (answer) => answer.question, {
+    cascade: true,
+  })
+  answers: Answer[];
+  @ManyToOne(() => User, (user) => user.questions, {
+    onDelete: 'CASCADE',
+  })
+  user: User;
 }
