@@ -1,6 +1,6 @@
 import {
   Body,
-  Controller,
+  Controller, Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -41,5 +41,12 @@ export class QuestionController {
   @Get('')
   getByPagination(@Query() paginationDto: PaginationDto) {
     return this.questionService.getByPagination(paginationDto);
+  }
+  @UseGuards(RoleGuard)
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.ADMIN)
+  @Delete(':id')
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.questionService.delete(id);
   }
 }

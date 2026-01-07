@@ -79,4 +79,10 @@ export class QuestionService {
       },
     };
   }
+  async delete(id: number): Promise<void> {
+    const result = await this.questionRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Question not found');
+    }
+  }
 }
