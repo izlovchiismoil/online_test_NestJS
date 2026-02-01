@@ -18,7 +18,7 @@ export class QuestionService {
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
   ) {}
-  async create(createQuestionDto: CreateQuestionDto): Promise<Question> {
+  async create(userId: number, createQuestionDto: CreateQuestionDto): Promise<Question> {
     const question = await this.questionRepository.findOne({
       where: {
         title: createQuestionDto.title,
@@ -28,6 +28,7 @@ export class QuestionService {
       throw new ConflictException('Question already exists');
     }
     const questionObj = this.questionRepository.create({
+      user: { id: userId },
       title: createQuestionDto.title,
       answers: createQuestionDto.answers,
     });

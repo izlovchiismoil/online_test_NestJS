@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { QuestionService } from './question.service';
 import { UseGuards } from '@nestjs/common';
@@ -24,8 +25,8 @@ export class QuestionController {
   @UseGuards(JwtAuthGuard)
   @Roles(Role.STUDENT, Role.ADMIN)
   @Post('create')
-  async create(@Body() body: CreateQuestionDto) {
-    return await this.questionService.create(body);
+  async create(@Req() req, @Body() body: CreateQuestionDto) {
+    return await this.questionService.create(req.user.id, body);
   }
   @UseGuards(RoleGuard)
   @UseGuards(JwtAuthGuard)
