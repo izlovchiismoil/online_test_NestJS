@@ -1,6 +1,7 @@
 import {
   Body,
-  Controller, Delete,
+  Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -15,8 +16,6 @@ import { RoleGuard } from '../auth/guards/role/role.guard';
 import { Role } from '../auth/enums/role.enum';
 import { PaginationDto } from './dto/pagination.dto';
 import { Roles } from '../auth/decorators/role.decorator';
-import type { JwtUser } from '../auth/interfaces/payload.interface';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('questions')
 export class QuestionController {
@@ -25,8 +24,8 @@ export class QuestionController {
   @UseGuards(JwtAuthGuard)
   @Roles(Role.STUDENT, Role.ADMIN)
   @Post('create')
-  async create(@CurrentUser() user: JwtUser, @Body() body: CreateQuestionDto) {
-    return await this.questionService.create(user, body);
+  async create(@Body() body: CreateQuestionDto) {
+    return await this.questionService.create(body);
   }
   @UseGuards(RoleGuard)
   @UseGuards(JwtAuthGuard)

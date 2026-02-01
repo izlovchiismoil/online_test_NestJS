@@ -11,7 +11,6 @@ import {
   PaginationDto,
   QuestionPaginationResponseDto,
 } from './dto/pagination.dto';
-import { JwtUser } from '../auth/interfaces/payload.interface';
 
 @Injectable()
 export class QuestionService {
@@ -19,10 +18,7 @@ export class QuestionService {
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
   ) {}
-  async create(
-    user: JwtUser,
-    createQuestionDto: CreateQuestionDto,
-  ): Promise<Question> {
+  async create(createQuestionDto: CreateQuestionDto): Promise<Question> {
     const question = await this.questionRepository.findOne({
       where: {
         title: createQuestionDto.title,
@@ -34,7 +30,6 @@ export class QuestionService {
     const questionObj = this.questionRepository.create({
       title: createQuestionDto.title,
       answers: createQuestionDto.answers,
-      userId: user.id,
     });
     return await this.questionRepository.save(questionObj);
   }

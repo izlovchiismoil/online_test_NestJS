@@ -28,12 +28,11 @@ export class UserService {
     if (admin) {
       throw new ConflictException('Admin already exists');
     }
-    const adminHashedPassword = await bcrypt.hash('admin', 10);
     const adminObj: User = this.userRepository.create({
       firstName: 'Admin',
       lastName: 'Admin',
       username: 'admin',
-      password: adminHashedPassword,
+      password: 'admin',
       role: Role.ADMIN,
     });
     const savedAdmin = await this.userRepository.save(adminObj);
@@ -62,7 +61,7 @@ export class UserService {
       throw new ForbiddenException('Access Denied');
     }
     const userObj = this.userRepository.create(createUserDto);
-    userObj.password = await bcrypt.hash(createUserDto.password, 10);
+    // userObj.password = await bcrypt.hash(createUserDto.password, 10);
     const savedUser = await this.userRepository.save(userObj);
     if (!savedUser) {
       throw new BadRequestException('User is not created');

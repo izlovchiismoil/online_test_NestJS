@@ -14,8 +14,6 @@ export class Question {
 
   @Column({ type: 'text' })
   title: string;
-  @Column({ type: 'int' })
-  userId: number;
   @OneToMany(() => Answer, (answer) => answer.question, {
     cascade: true,
   })
